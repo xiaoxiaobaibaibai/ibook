@@ -17,7 +17,8 @@ module.exports = {
     'no-trailing-spaces': 'off',
     'indent': 'off',
     'space-before-function-paren': 'off',
-    'spaced-comment': 'off'
+    'spaced-comment': 'off',
+    'quote-props': 'off'
 
   }
 }

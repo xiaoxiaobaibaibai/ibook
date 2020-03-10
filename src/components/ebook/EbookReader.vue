@@ -11,7 +11,9 @@ import Epub from 'epubjs'
 global.ePub = Epub
 export default {
     computed: {
-        ...mapGetters(['fileName'])
+        ...mapGetters([
+        'fileName',
+        'menuVisible'])
     },
     methods: {
         prevPage() {
@@ -24,7 +26,9 @@ export default {
                 this.rendition.next()
             }
         },
-        toggleTitleAndMenu() {},
+        toggleTitleAndMenu() {
+            this.$store.dispatch('setMenuVisible', !this.menuVisible)
+        },
         initEpub() {
             const url = 'http://localhost:8081/epub/' + this.fileName + '.epub'
             this.book = new Epub(url)
@@ -51,7 +55,7 @@ export default {
                 } else {
                     this.toggleTitleAndMenu()
                 }
-                // event.preventDefault()
+                 // event.preventDefault()
                 event.stopPropagation()
             })
         }
