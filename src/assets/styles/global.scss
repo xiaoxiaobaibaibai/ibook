@@ -1,0 +1,10 @@
+@import "./reset";
+@import "./mixin";
+@import "./transition";
+@import "./home";
+@import "./flapCard";
+$ratio: 375 / 10;
+
+@function px2rem($px) {
+    @return $px / $ratio+rem;
+}
