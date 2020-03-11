@@ -18,7 +18,8 @@ module.exports = {
     'indent': 'off',
     'space-before-function-paren': 'off',
     'spaced-comment': 'off',
-    'quote-props': 'off'
+    'quote-props': 'off',
+    'quotes': 'off'
 
   }
 }
