@@ -19,7 +19,9 @@ module.exports = {
     'space-before-function-paren': 'off',
     'spaced-comment': 'off',
     'quote-props': 'off',
-    'quotes': 'off'
+    'quotes': 'off',
+    'no-unused-vars': 'off'
+
 
   }
 }
