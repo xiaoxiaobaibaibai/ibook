@@ -5,7 +5,7 @@
             <div class="ebook-popup-title-icon" @click="hide">
                 <span class="icon-down2"></span>
             </div>
-            <span class="ebook-popup-title-text">选择字体</span>
+            <span class="ebook-popup-title-text">{{$t('book.selectFont')}}</span>
         </div>
         <div class="ebook-popup-list-wrapper">
             <div class="ebook-popup-item" 
@@ -25,6 +25,8 @@
 <script>
 import { ebookMixin } from '@/utils/mixin.js'
 import { FONT_FAMILY } from '@/utils/book.js'
+import { saveFontFamily } from '@/utils/localStorage'
+// import { setLocalStorage, getLocalStorage} from '../../utils/localStorage'
 export default {
     mixins: [ebookMixin],
     data() {
@@ -41,13 +43,18 @@ export default {
         },
         setFontFamily(font) {
             this.setDefaultFontFamily(font)
+            saveFontFamily(this.fileName, font)
             if (font === 'Default') {
                 this.currentBook.rendition.themes.font('Times New Roman')
             } else {
                 this.currentBook.rendition.themes.font(font)
             }            
-        }
+        }       
+
     }
+//     mounted() {
+//         setLocalStorage(this.fileName, this.defaultFontFamily)
+//     }
 }
 </script>
 <style lang="scss" rel="stylesheet/scss" scoped>

@@ -8,6 +8,10 @@
 <script>
 import Epub from 'epubjs'
 import { ebookMixin } from '@/utils/mixin.js'
+import { 
+    getFontFamily, saveFontFamily,
+    getFontSize, saveFontSize 
+         } from '@/utils/localStorage'
 
 global.ePub = Epub
 export default {
@@ -49,7 +53,22 @@ export default {
                 height: innerHeight,
                 methods: 'default' // 微信的兼容性配置
             })
-            this.rendition.display()
+            this.rendition.display().then(() => {
+                const font = getFontFamily(this.fileName)
+                if (!font) {
+                    saveFontFamily(this.fileName, this.defaultFontFamily)
+                } else {
+                    this.rendition.themes.font(font)
+                    this.setDefaultFontFamily(font)
+                }
+                const fontSize = getFontSize(this.fileName)
+                if (!fontSize) {
+                    saveFontSize(this.fileName, this.defaultFontSize)
+                } else {
+                    this.rendition.themes.fontSize(fontSize)
+                    this.setDefaultFontSize(fontSize)
+                }
+            })
             this.rendition.on('touchstart', event => {
                 this.touchStartX = event.changedTouches[0].clientX
                 this.touchStartTime = event.timeStamp
