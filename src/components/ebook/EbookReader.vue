@@ -73,12 +73,8 @@ export default {
                     this.rendition.themes.font(font)
                     this.setDefaultFontFamily(font)
                 }
-            },
-        initEpub() {
-            const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
-            this.book = new Epub(url)
-            this.setCurrentBook(this.book)
-            // console.log(this.book)
+},
+        initRendition() {
             this.rendition = this.book.renderTo('read', {
                 width: innerWidth,
                 height: innerHeight,
@@ -89,7 +85,6 @@ export default {
                 this.initFontSize()
                 this.initFontFamily()
                 this.initGlobalStyle()
-            })
             this.rendition.on('touchstart', event => {
                 this.touchStartX = event.changedTouches[0].clientX
                 this.touchStartTime = event.timeStamp
@@ -109,6 +104,9 @@ export default {
                  // event.preventDefault()
                 event.stopPropagation()
             })
+            })
+        },
+        initGestrue() {
             this.rendition.hooks.content.register(contents => {
                 Promise.all(
                     [
@@ -120,8 +118,22 @@ export default {
                 //     console.log(...)
                 // })
                 })
+        },
+        initEpub() {
+            const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
+            this.book = new Epub(url)
+            this.setCurrentBook(this.book)
+            // console.log(this.book)
+            this.initRendition()
+            this.initGestrue()
+            this.book.ready.then(() => {
+                return this.book.locations.generate(750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16))
+            }).then(locations => {
+                // console.log(locations)
+                this.setBookAvailable(true)
+            })
         }        
-    },
+},
     mounted() {
         //const fileName = this.$route.params.fileName.split('|').join('/')
         this.setFileName(this.$route.params.fileName.split('|').join('/')).then(() => {
