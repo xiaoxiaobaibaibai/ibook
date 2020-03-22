@@ -48,16 +48,34 @@ export default {
             let defaultTheme = getTheme(this.fileName)
             if (!defaultTheme) {
                 defaultTheme = this.themeList[0].name
-                this.setDefaultTheme(defaultTheme)
                 saveTheme(this.fileName, defaultTheme)
             }
+            this.setDefaultTheme(defaultTheme)
             this.themeList.forEach(theme => {
                 this.rendition.themes.register(theme.name, theme.style)
             })
             this.rendition.themes.select(defaultTheme)
         },
+        initFontSize() {
+            const fontSize = getFontSize(this.fileName)
+                if (!fontSize) {
+                    saveFontSize(this.fileName, this.defaultFontSize)
+                } else {
+                    this.rendition.themes.fontSize(fontSize)
+                    this.setDefaultFontSize(fontSize)
+                }
+        },
+        initFontFamily() {
+            const font = getFontFamily(this.fileName)
+                if (!font) {
+                    saveFontFamily(this.fileName, this.defaultFontFamily)
+                } else {
+                    this.rendition.themes.font(font)
+                    this.setDefaultFontFamily(font)
+                }
+            },
         initEpub() {
-            const url = 'http://localhost:8081/epub/' + this.fileName + '.epub'
+            const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
             this.book = new Epub(url)
             this.setCurrentBook(this.book)
             // console.log(this.book)
@@ -67,21 +85,10 @@ export default {
                 methods: 'default' // 微信的兼容性配置
             })
             this.rendition.display().then(() => {
-                this.initTheme() 
-                const font = getFontFamily(this.fileName)
-                if (!font) {
-                    saveFontFamily(this.fileName, this.defaultFontFamily)
-                } else {
-                    this.rendition.themes.font(font)
-                    this.setDefaultFontFamily(font)
-                }
-                const fontSize = getFontSize(this.fileName)
-                if (!fontSize) {
-                    saveFontSize(this.fileName, this.defaultFontSize)
-                } else {
-                    this.rendition.themes.fontSize(fontSize)
-                    this.setDefaultFontSize(fontSize)
-                }
+                this.initTheme()
+                this.initFontSize()
+                this.initFontFamily()
+                this.initGlobalStyle()
             })
             this.rendition.on('touchstart', event => {
                 this.touchStartX = event.changedTouches[0].clientX
