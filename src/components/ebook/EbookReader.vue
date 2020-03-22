@@ -10,7 +10,8 @@ import Epub from 'epubjs'
 import { ebookMixin } from '@/utils/mixin.js'
 import { 
     getFontFamily, saveFontFamily,
-    getFontSize, saveFontSize 
+    getFontSize, saveFontSize,
+    getTheme, saveTheme
          } from '@/utils/localStorage'
 
 global.ePub = Epub
@@ -43,6 +44,18 @@ export default {
             this.setSettingVisible(-1)
             this.setFontFamilyVisible(false)
         },
+        initTheme() {
+            let defaultTheme = getTheme(this.fileName)
+            if (!defaultTheme) {
+                defaultTheme = this.themeList[0].name
+                this.setDefaultTheme(defaultTheme)
+                saveTheme(this.fileName, defaultTheme)
+            }
+            this.themeList.forEach(theme => {
+                this.rendition.themes.register(theme.name, theme.style)
+            })
+            this.rendition.themes.select(defaultTheme)
+        },
         initEpub() {
             const url = 'http://localhost:8081/epub/' + this.fileName + '.epub'
             this.book = new Epub(url)
@@ -54,6 +67,7 @@ export default {
                 methods: 'default' // 微信的兼容性配置
             })
             this.rendition.display().then(() => {
+                this.initTheme() 
                 const font = getFontFamily(this.fileName)
                 if (!font) {
                     saveFontFamily(this.fileName, this.defaultFontFamily)
@@ -99,7 +113,7 @@ export default {
                 //     console.log(...)
                 // })
                 })
-        }
+        }        
     },
     mounted() {
         //const fileName = this.$route.params.fileName.split('|').join('/')

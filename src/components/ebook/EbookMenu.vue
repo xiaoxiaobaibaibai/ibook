@@ -22,6 +22,7 @@
     </transition>
     <ebook-setting-font></ebook-setting-font>
     <ebook-setting-font-popup></ebook-setting-font-popup>
+    <ebook-setting-theme></ebook-setting-theme>
 </div>
     <!-- <transition name="slide-up">
     <div class="setting-wrapper" v-show="ifSettingShow">
@@ -80,12 +81,14 @@
 import { ebookMixin } from '@/utils/mixin.js'
 import EbookSettingFont from './EbookSettingFont'
 import EbookSettingFontPopup from './EbookSettingFontPopup'
+import EbookSettingTheme from './EbookSettingTheme'
 
 export default {
   mixins: [ebookMixin],
   components: {
     EbookSettingFont,
-    EbookSettingFontPopup
+    EbookSettingFontPopup,
+    EbookSettingTheme
   },
   methods: {
     showSetting(key) {
