@@ -7,8 +7,8 @@
               <span class="icon-forward"></span>
           </div>
         <div class="progress-wrapper">
-            <div class="progress-icon-wrapper">
-                <span class="icon-back" @click="prevSection()"></span>
+            <div class="progress-icon-wrapper" @click="prevSection()">
+                <span class="icon-back"></span>
             </div>
           <input class="progress" type="range"
                  max="100"
@@ -19,12 +19,13 @@
                  :value="progress"
                  :disabled="!bookAvailable"
                  ref="progress">
-            <div class="progress-icon-wrapper">
-                <span class="icon-forward" @click="nextSection()"></span>
+            <div class="progress-icon-wrapper" @click="nextSection()">
+                <span class="icon-forward"></span>
             </div>
         </div>
         <div class="text-wrapper">
-          <span>{{bookAvailable ? progress + '%' : '加载中...'}}</span>
+          <span class="progress-section-text">{{getSectionName}}</span>
+          <span>({{bookAvailable ? progress + '%' : '加载中...'}})</span>
         </div>
       </div>
     </div>
@@ -32,8 +33,20 @@
 </template>
 <script>
 import { ebookMixin } from '../../utils/mixin'
+
 export default {
     mixins: [ebookMixin],
+    computed: {
+      getSectionName() {
+        if (this.section) {
+          const sectionInfo = this.currentBook.section(this.section)
+          if (sectionInfo && sectionInfo.href) {
+            return this.currentBook.navigation.get(sectionInfo.href).label
+          }
+        }
+        return ''
+      }
+    },
     methods: {
         onProgressChange(progress) {
             this.setProgress(progress).then(() => {
@@ -48,13 +61,32 @@ export default {
         },
         displayProgress() {
             const cfi = this.currentBook.locations.cfiFromPercentage(this.progress / 100)
-            this.currentBook.rendition.display(cfi)
+            this.display(cfi)
         },
         updateProgressBg() {
             this.$refs.progress.style.backgroundSize = `${this.progress}% 100%`
         },
-        prevSection() {},
-        nextSection() {}
+        prevSection() {
+          if (this.section > 0 && this.bookAvailable) {
+            this.setSection(this.section - 1).then(() => {
+              this.displaySection()
+            })
+          }
+        },
+        nextSection() {
+         // console.log(this.currentBook.locations)
+          if (this.section < this.currentBook.spine.length - 1 && this.bookAvailable) {
+            this.setSection(this.section + 1).then(() => {
+              this.displaySection()
+            })
+          }
+        },
+        displaySection() {
+          const sectionInfo = this.currentBook.section(this.section)
+              if (sectionInfo && sectionInfo.href) {
+                this.display(sectionInfo.href)
+              }
+        }      
     },
     updated() {
         this.updateProgressBg()
@@ -125,7 +157,13 @@ export default {
           width: 100%;
           color: #333;
           font-size: px2rem(12);
-          text-align: center;
+          padding: 0 px2rem(15);
+          box-sizing: border-box;
+          // text-align: center;
+          @include center;
+          .progress-section-text {
+            @include ellipsis;
+          }
         }
       }
   }

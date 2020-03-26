@@ -11,8 +11,8 @@ import { ebookMixin } from '@/utils/mixin.js'
 import { 
     getFontFamily, saveFontFamily,
     getFontSize, saveFontSize,
-    getTheme, saveTheme
-         } from '@/utils/localStorage'
+    getTheme, saveTheme, getLocation 
+    } from '@/utils/localStorage'
 
 global.ePub = Epub
 export default {
@@ -20,13 +20,17 @@ export default {
     methods: {
         prevPage() {
             if (this.rendition) {
-                this.rendition.prev()
+                this.rendition.prev().then(() => {
+                    this.refreshLocation()
+                })
                 this.hideTitleAndMenu()
             }
         },
         nextPage() {
             if (this.rendition) {
-                this.rendition.next()
+                this.rendition.next().then(() => {
+                    this.refreshLocation()
+                })
                 this.hideTitleAndMenu()
             }
         },
@@ -80,11 +84,13 @@ export default {
                 height: innerHeight,
                 methods: 'default' // 微信的兼容性配置
             })
-            this.rendition.display().then(() => {
+            const location = getLocation(this.fileName)
+            this.display(location, () => {
                 this.initTheme()
                 this.initFontSize()
                 this.initFontFamily()
                 this.initGlobalStyle()
+                this.refreshLocation()
             this.rendition.on('touchstart', event => {
                 this.touchStartX = event.changedTouches[0].clientX
                 this.touchStartTime = event.timeStamp
@@ -131,6 +137,7 @@ export default {
             }).then(locations => {
                 // console.log(locations)
                 this.setBookAvailable(true)
+                this.refreshLocation()
             })
         }        
 },
