@@ -24,6 +24,7 @@
     <ebook-setting-font-popup></ebook-setting-font-popup>
     <ebook-setting-theme></ebook-setting-theme>
     <ebook-setting-progress></ebook-setting-progress>
+    <ebook-slide></ebook-slide>
 </div>
     <!-- <transition name="slide-up">
     <div class="setting-wrapper" v-show="ifSettingShow">
@@ -84,6 +85,7 @@ import EbookSettingFont from './EbookSettingFont'
 import EbookSettingFontPopup from './EbookSettingFontPopup'
 import EbookSettingTheme from './EbookSettingTheme'
 import EbookSettingProgress from './EbookSettingProgress'
+import EbookSlide from './EbookSlide'
 
 export default {
   mixins: [ebookMixin],
@@ -91,7 +93,8 @@ export default {
     EbookSettingFont,
     EbookSettingFontPopup,
     EbookSettingTheme,
-    EbookSettingProgress
+    EbookSettingProgress,
+    EbookSlide
   },
   methods: {
     showSetting(key) {
