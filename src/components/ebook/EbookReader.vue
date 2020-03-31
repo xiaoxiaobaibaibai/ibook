@@ -13,7 +13,7 @@ import {
     getFontSize, saveFontSize,
     getTheme, saveTheme, getLocation 
     } from '@/utils/localStorage'
-
+import { flatten } from '../../utils/book'
 global.ePub = Epub
 export default {
     mixins: [ebookMixin],
@@ -134,6 +134,17 @@ export default {
             this.book.loaded.metadata.then(metadata => {
                 this.setMetadata(metadata)
             })
+            this.book.loaded.navigation.then(nav => {
+                const navItem = flatten(nav.toc)
+                navigation = flatten(navigation)
+                function find(item, level = 0) {
+                        return !item.parent ? level : find(navItem.filter(parentItem => parentItem.id === item.parent)[0], ++level)
+                    }
+                    navItem.forEach(item => {
+                        item.level = find(item)
+                    })
+                    this.setNavigation(navItem)
+                })
         },
         initEpub() {
             const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
