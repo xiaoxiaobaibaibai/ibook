@@ -28,20 +28,46 @@
                   <span class="progress-text">{{$t('book.haveRead2')}}</span>
               </div>
               <div class="slide-contents-book-time">{{getReadTimeText()}}</div>
-          </div>  
+          </div>
         </div>
+        <scroll class="slide-contents-list" 
+                  :top="156" 
+                  :bottom="48" 
+                  ref="scroll">
+                  <div class="slide-contents-item"
+                       v-for="(item, index) in navigation"
+                       :key='index'>
+                      <span class="slide-contents-item-label"
+                            :class="{'selected': section === index}"
+                            :style="contentItemStyle(item)">
+                          {{item.label}}
+                      </span>
+                      <span class="slide-contents-item-page"></span>
+                  </div>
+        </scroll>
     </div>
 </template>
 <script>
 import { ebookMixin } from '../../utils/mixin'
+import Scroll from '../common/Scroll'
+import { px2rem } from '../../utils/utils'
+
 export default {
     mixins: [ebookMixin],
+    components: {
+        Scroll
+    },
     data() {
         return {
             searchVisible: false
         }
     },
     methods: {
+        contentItemStyle(item) {
+            return {
+                marginLeft: `${px2rem(item.level * 15)}rem`
+            }    
+        },
         showSearchPage() {
             this.searchVisible = true
         },
@@ -147,6 +173,20 @@ export default {
                }
            }
        }
-
+       .slide-contents-list {
+           padding: 0 px2rem(15);
+           box-sizing: border-box;
+            .slide-contents-item {
+                display: flex;
+                padding: px2rem(20) 0;
+                box-sizing: border-box;
+                .slide-contents-item-label {
+                    flex: 1;
+                    font-size: px2rem(14);
+                    @include ellipsis;
+                   }
+                .slide-contents-item-page {}
+               }
+           }
    }
 </style>

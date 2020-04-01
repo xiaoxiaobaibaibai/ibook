@@ -135,8 +135,8 @@ export default {
                 this.setMetadata(metadata)
             })
             this.book.loaded.navigation.then(nav => {
+                // console.log(nav)
                 const navItem = flatten(nav.toc)
-                navigation = flatten(navigation)
                 function find(item, level = 0) {
                         return !item.parent ? level : find(navItem.filter(parentItem => parentItem.id === item.parent)[0], ++level)
                     }
@@ -144,6 +144,8 @@ export default {
                         item.level = find(item)
                     })
                     this.setNavigation(navItem)
+                    // console.log(navItem)
+                    // console.log(navigation)
                 })
         },
         initEpub() {
