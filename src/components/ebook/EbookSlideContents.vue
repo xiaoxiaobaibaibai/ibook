@@ -7,14 +7,16 @@
                 </div>
                 <input class="slide-contents-search-input"
                        type="text"
+                       v-model="searchText"
                        :placeholder="$t('book.searchHint')"
+                       @keyup.enter.exact="search()"
                        @click="showSearchPage">
                 </div>
                 <div class="slide-contents-search-cancel" 
                      v-if="searchVisible"
                      @click="hideSearchPage()">{{$t('book.cancel')}}</div>
         </div>
-        <div class="slide-contents-book-wrapper">
+        <div class="slide-contents-book-wrapper" v-show="!searchVisible">
             <div class="silde-contents-book-img-wrapper">
                 <img :src="cover" class="slide-contents-book-img">
             </div>
@@ -32,18 +34,31 @@
         </div>
         <scroll class="slide-contents-list" 
                   :top="156" 
-                  :bottom="48" 
+                  :bottom="48"
+                  v-show="!searchVisible"
                   ref="scroll">
                   <div class="slide-contents-item"
                        v-for="(item, index) in navigation"
                        :key='index'>
                       <span class="slide-contents-item-label"
                             :class="{'selected': section === index}"
-                            :style="contentItemStyle(item)">
+                            :style="contentItemStyle(item)"
+                            @click="displayContent(item.href)">
                           {{item.label}}
                       </span>
                       <span class="slide-contents-item-page"></span>
                   </div>
+        </scroll>
+        <scroll class="slide-search-list"
+                :top="66"
+                :bottom="48"
+                v-show="searchVisible">
+                <div class="slide-search-item" 
+                v-for="(item, index) in searchList"
+                :key="index"
+                v-html="item.excerpt"
+                @click="displayContent(item.cfi, true)">
+                </div>
         </scroll>
     </div>
 </template>
@@ -59,10 +74,25 @@ export default {
     },
     data() {
         return {
-            searchVisible: false
+            searchVisible: false,
+            searchList: null,
+            searchText: ''
         }
     },
     methods: {
+        doSearch(q) {
+            return Promise.all(
+            this.currentBook.spine.spineItems.map(item => item.load(this.currentBook.load.bind(this.currentBook)).then(item.find.bind(item, q)).finally(item.unload.bind(item)))
+            ).then(results => Promise.resolve([].concat.apply([], results)))
+},
+        displayContent(target, highlight = false) {
+            this.display(target, () => {
+                this.hideTitleAndMenu()
+                if (highlight) {
+                    this.currentBook.rendition.annotations.highlight(target)
+                }
+            })
+        },
         contentItemStyle(item) {
             return {
                 marginLeft: `${px2rem(item.level * 15)}rem`
@@ -73,8 +103,26 @@ export default {
         },
         hideSearchPage() {
             this.searchVisible = false
+            this.searchText = ''
+            this.searchList = null
+        },
+        search() {
+            if (this.searchText && this.searchText.length > 0) {
+                this.doSearch(this.searchText).then(list => {
+                this.searchList = list
+                this.searchList.map(item => {
+                    item.excerpt = item.excerpt.replace(this.searchText, `<span class="content-search-text">${this.searchText}</span>`)
+                    return item 
+                    })
+            })
+            }            
         }
     }
+    // mounted() {
+    //     this.doSearch('added').then(list => {
+    //         this.searchList = list
+    //     })
+    // }
 }
 </script>
 
@@ -183,10 +231,22 @@ export default {
                 .slide-contents-item-label {
                     flex: 1;
                     font-size: px2rem(14);
+                    line-height: px2rem(16);
                     @include ellipsis;
                    }
                 .slide-contents-item-page {}
                }
            }
+        .slide-search-list {
+            width: 100%;
+            padding: 0 px2rem(15);
+            box-sizing: border-box;
+            .slide-search-item {
+                font-size: px2rem(14);
+                line-height: px2rem(16);
+                padding: px2rem(20) 0;
+                box-sizing: border-box;
+            }
+        }
    }
 </style>
