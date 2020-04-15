@@ -38,7 +38,7 @@ export default {
   methods: {
     restore() {
       this.$refs.ebook.style.top = 0
-      this.$refs.ebook.style.transition = 'all 0.2s'
+      this.$refs.ebook.style.transition = 'all 0.2s linear'
       setTimeout(() => {
         this.$refs.ebook.style.transition = ''
       }, 200)

@@ -6,9 +6,9 @@
             </div>
             <div class="ebook-bookmark-text">{{text}}</div>
         </div>
-        <div class="ebook-bookmark-icon-wrapper">
-            <bookmark :color="color" :width="15" :height="35"
-                      :style="isFixed ? fixedStyle : {}"></bookmark>
+        <div class="ebook-bookmark-icon-wrapper" 
+             :style="fixed ? fixedStyle : {}">
+            <bookmark :color="color" :width="15" :height="35"></bookmark>
         </div>
     </div>
 </template>
@@ -40,85 +40,152 @@ export default {
     },
     watch: {
         offsetY(v) {
-            if (!this.bookAvailable || this.menuVisible || this.settingVisible >= 0) {
-                return
-            }
-            if (v >= this.height && v < this.threshold) {
-                this.beforeThreshold(v)
+          if (!this.bookAvailable || this.menuVisible || this.settingVisible >= 0) {
+            return
+          }
+            if (v >= this.height && v <= this.threshold) {
+              this.beforeThreshold(v)
             } else if (v >= this.threshold) {
-                this.afterThreshold(v)
-            } else if (v > 0 && v < this.height) {
-                this.beforeHeight()
+              this.afterThreshold(v)
+            } else if (v > 0 && v < this.height) {          
+              this.beforeHeight()
             } else if (v === 0) {
-                this.restore()
+              this.restore()
             }
-        }
+      }
+      // offsetY(v)
+        // if (this.settingVisible > 0 || this.menuVisible || this.isPaginating) {
+        //   return
+        // }
+        // if (v >= this.height && v < this.threshold) {
+        //   this.setBookmark = false
+        //   this.$refs.ebookBookmark.style.top = `${-v}px`
+        //   if (this.$refs.iconDown.style.transform === 'rotate(180deg)') {
+        //     this.$refs.iconDown.style.transform = 'rotate(0deg)'
+        //   }
+        //   if (!this.isBookmark) {
+        //     this.text = this.$t('book.pulldownAddMark')
+        //     this.color = WHITE
+        //   } else {
+        //     this.text = this.$t('book.pulldownDeleteMark')
+        //     this.color = BLUE
+        //   }
+        // } else if (v >= this.threshold) {
+        //   this.setBookmark = true
+        //   this.$refs.ebookBookmark.style.top = `${-v}px`
+        //   if (this.$refs.iconDown.style.transform === 'rotate(0deg)' ||
+        //     this.$refs.iconDown.style.transform === '') {
+        //     this.$refs.iconDown.style.transform = 'rotate(180deg)'
+        //   }
+        //   if (!this.isBookmark) {
+        //     this.text = this.$t('book.releaseAddMark')
+        //     this.color = BLUE
+        //   } else {
+        //     this.text = this.$t('book.releaseDeleteMark')
+        //     this.color = WHITE
+        //   }
+        // } else if (v > 0 && v < this.height) {
+        //   this.setBookmark = false
+        //   if (!this.isBookmark) {
+        //     this.text = this.$t('book.pulldownAddMark')
+        //   } else {
+        //     this.text = this.$t('book.pulldownDeleteMark')
+        //   }
+        // } else if (v === 0) {
+        //   if (!this.isBookmark) {
+        //     if (this.setBookmark) {
+        //       this.fixed = true
+        //       this.setAndSaveBookmark()
+        //     } else {
+        //       this.fixed = false
+        //     }
+        //   } else {
+        //     if (this.setBookmark) {
+        //       this.fixed = false
+        //       this.removeBookmark()
+        //     } else {
+        //       this.fixed = true
+        //     }
+        //   }
+        //   setTimeout(() => {
+        //     this.$refs.ebookBookmark.style.top = `${-this.height}px`
+        //     this.$refs.iconDown.style.transform = 'rotate(0deg)'
+        //     if (!this.fixed && this.color === BLUE) {
+        //       this.color = WHITE
+        //     }
+        //     if (this.text === this.$t('book.releaseAddMark')) {
+        //       this.text = this.$t('book.pulldownAddMark')
+        //     }
+        //     this.setBookmark = false
+        //   }, 200)
+        // }
+      
     },
     data() {
         return {
-            text: this.$t('book.pulldownAddMark'),
+            text: '',
             color: WHITE,
-            isFixed: false
+            fixed: false,
+            setBookmark: false
         }
     },
     methods: {
-        restore() {
-            // 归位
-            setTimeout(() => {
-                this.$refs.bookmark.style.top = `${-this.height}px`
-                this.$refs.iconDown.style.transform = 'rotate(0deg)'
-            }, 200)
-            if (this.isFixed) {
-                this.setIsBookmark(true)
-            } else {
-                this.setIsBookmark(false)
-            }
-        },
-        beforeHeight() {
-            //未超过书签的高度
-                if (this.isBookmark) {
-                    this.text = this.$t('book.pulldownDeleteMark')
-                    this.color = BLUE
-                    this.isFixed = true
-                } else {
-                    this.text = this.$t('book.pulldownAddMark')
-                    this.color = WHITE
-                    this.isFixed = false
-                }
-        },
-        beforeThreshold(v) {
-            // 未到达零界状态
-                this.$refs.bookmark.style.top = `${-v}px`
-                if (this.isBookmark) {
-                    this.text = this.$t('book.pulldownDeleteMark')
-                    this.color = BLUE
-                } else {
-                    this.text = this.$t('book.pulldownAddMark')
-                    this.color = WHITE
-                }                
-                const iconDown = this.$refs.iconDown
-                if (iconDown.style.transform === 'rotate(180deg)') {
-                    iconDown.style.transform = 'rotate(0deg)'
-                }
-        },
-        afterThreshold(v) {
-            // 超越零界状态
-                this.$refs.bookmark.style.top = `${-v}px`
-                if (this.isBookmark) {
-                    this.text = this.$t('book.releaseDeleteMark')
-                    this.color = WHITE
-                    this.isFixed = false
-                } else {
-                    this.text = this.$t('book.releaseAddMark')
-                    this.color = BLUE
-                    this.isFixed = true
-                }
-                
-                const iconDown = this.$refs.iconDown
-                if (iconDown.style.transform === '' || iconDown.style.transform === 'rotate(0deg)') {
-                    iconDown.style.transform = 'rotate(180deg)'
-                }
+      addBookmark() {},
+      removeBookmark() {},
+      beforeHeight() {
+        // 状态一 未达到指定高度
+        if (this.isBookmark) {
+                this.text = this.$t('book.pulldownDeleteMark')
+                this.color = BLUE
+                this.fixed = true
+              } else {
+                this.text = this.$t('book.pulldownAddMark')
+                this.color = WHITE
+                this.fixed = false
+              }
+        this.fixed = false
+      },
+      beforeThreshold (v) {
+        // 状态二 未到达临界状态
+              //console.log('daodao')
+              this.$refs.bookmark.style.top = `${-v}px`
+              this.beforeHeight()
+              const iconDown = this.$refs.iconDown
+              if (iconDown.style.transform === 'rotate(180deg)') {
+                iconDown.style.transform = 'rotate(0deg)'
+              }
+      },
+      afterThreshold(v) {
+              // 状态三 超越临界状态
+              this.$refs.bookmark.style.top = `${-v}px`
+              if (this.isBookmark) {
+                this.text = this.$t('book.releaseDeleteMark')
+                this.color = WHITE
+                this.fixed = false
+              } else {
+                this.text = this.$t('book.releaseAddMark')
+                this.color = BLUE
+                this.fixed = true
+              }
+              const iconDown = this.$refs.iconDown
+              if (iconDown.style.transform === '' || iconDown.style.transform === 'rotate(0deg)') {
+                iconDown.style.transform = 'rotate(180deg)'
+              }
+      },
+      restore() {
+        // 状态四 归位
+        setTimeout(() => {
+        this.$refs.bookmark.style.top = `${-this.height}px`
+        this.$refs.iconDown.style.transform = 'rotate(0deg)'
+        }, 200)
+        if (this.fixed) {
+          this.setIsBookmark(true)
+          this.addBookmark()
+        } else {
+          this.setIsBookmark(false)
+          this.removeBookmark()
         }
+      }
     }
 }
 </script>
@@ -139,7 +206,7 @@ export default {
            .ebook-bookmark-down-wrapper {
                font-size: px2rem(14);
                color: white;
-               transition: all .2 linear;
+               transition: all .2s linear;
                @include center;
            }
            .ebook-bookmark-text {
@@ -151,6 +218,6 @@ export default {
            position: absolute;
            right: 0;
            bottom: 0;
-           margin-right: px2rem(15);           
+           margin-right: px2rem(10);           
    }}
 </style>
