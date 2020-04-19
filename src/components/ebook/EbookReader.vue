@@ -183,7 +183,7 @@ export default {
             this.setCurrentBook(this.book)
             // console.log(this.book)
             this.initRendition()
-            this.initGestrue()
+            // this.initGestrue()
             this.parseBook()
             this.book.ready.then(() => {
                 return this.book.locations.generate(750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16))
@@ -214,7 +214,7 @@ export default {
            top: 0;
            left: 0;
            background: transparent;
-           z-index: 150;
+           z-index: 100;
            width: 100%;
            height: 100%;
        }
