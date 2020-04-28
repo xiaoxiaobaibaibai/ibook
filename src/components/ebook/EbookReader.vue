@@ -260,8 +260,9 @@ export default {
                 // console.log(locations)
                 this.setBookAvailable(true)
                 this.refreshLocation()
+                this.setPagelist(locations)
             })
-        }        
+        }
 },
     mounted() {
         //const fileName = this.$route.params.fileName.split('|').join('/')
