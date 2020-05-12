@@ -8,12 +8,14 @@
                   {{$t('home.title')}}
               </span>
           </div>
-          <div class="title-icon-shake-wrapper icon">
+          <div class="title-icon-shake-wrapper icon" @click="showFlapCard">
               <span class="icon-shake"></span>
           </div>
       </div>
       </transition>
-      <div class="title-icon-back-wrapper" :class="{'hide-title': !titleVisible}">
+      <div class="title-icon-back-wrapper" 
+           :class="{'hide-title': !titleVisible}"
+           @click="back">
               <span class="icon-back icon"></span>
           </div>
       <div class="search-bar-input-wrapper" :class="{'hide-title': !titleVisible}">
@@ -23,11 +25,12 @@
               <input class="input"
                      type="text"
                      :placeholder="$t('home.hint')"
-                     v-model="searchText">
+                     v-model="searchText"
+                     @click="showHotSearch">
           </div>
       </div>
   </div>
-  <hot-search-list></hot-search-list>
+  <hot-search-list v-show="hotSearchVisible" ref="hotSearch"></hot-search-list>
 </div>  
 </template>
 
@@ -43,7 +46,8 @@ export default {
         return {
             searchText: '',
             titleVisible: true,
-            shadowVisible: false
+            shadowVisible: false,
+            hotSearchVisible: false
         }
     },
     watch: {
@@ -55,21 +59,57 @@ export default {
                 this.showTitle()
                 this.hideShadow()
             }
+        },
+        hotSearchOffsetY(offsetY) {
+            if (offsetY > 0) {
+                this.showShadow()
+            } else {
+                this.hideShadow()
+            }
         }
     },
     methods: {
+        showFlapCard() {
+            this.setFlapCardVisible(true)
+        },
         hideTitle() {
             this.titleVisible = false
         },
         showTitle() {
             this.titleVisible = true
         },
-         hideShadow() {
+        hideShadow() {
             this.shadowVisible = false
         },
         showShadow() {
             this.shadowVisible = true
-        }        
+        },
+        hideHotSearch() {
+            this.hotSearchVisible = false
+            if (this.offsetY > 0) {
+                this.hideTitle()
+                this.showShadow()
+            } else {
+                this.showTitle()
+                this.hideShadow()
+            }
+        },
+        showHotSearch() {
+            this.hotSearchVisible = true
+            this.hideTitle()
+            this.hideShadow()
+            this.$nextTick(() => {
+                this.$refs.hotSearch.reset()
+            })            
+        },
+        back() {
+            if (this.offsetY > 0) {
+                this.showShadow()
+            } else {
+                this.hideShadow()
+            }
+            this.hideHotSearch()
+        }
     }
 }
 </script>
@@ -111,6 +151,7 @@ export default {
                position: absolute;
                left: px2rem(15);
                top: 0;
+               z-index: 200;
                height: px2rem(42);
                @include center;
                transition: height .2s linear;
