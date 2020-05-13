@@ -28,7 +28,15 @@ export default new Router({
         {
           path: 'home',
           component: () => import('@/views/store/StoreHome.vue')
-        }
+        },
+        {
+      path: 'list',
+      component: () => import('../views/store/StoreList.vue')
+    },
+    {
+      path: 'detail',
+      component: () => import('../views/store/StoreDetail.vue')
+    }
       ]
     }
   ]
