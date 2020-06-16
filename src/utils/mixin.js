@@ -1,6 +1,8 @@
 import { mapGetters, mapActions } from 'vuex'
 import { themeList, addCss, removeAllCss, getReadTimeByMinute } from './book'
-import { saveLocation, getBookmark } from './localStorage'
+import { saveLocation, getBookmark, getBookShelf, saveBookShelf } from './localStorage'
+import { gotoBookDetail, appendAddToShelf } from './store'
+import { shelf } from '../api/store'
 
 export const ebookMixin = {
   computed: {
@@ -153,13 +155,45 @@ export const storeHomeMixin = {
       'setFlapCardVisible'
     ]),
     showBookDetail(book) {
-      this.$router.push({
-        path: '/store/detail',
-        query: {
-          fileName: book.fileName,
-          category: book.categoryText
+      gotoBookDetail(this, book)
+    }
+  }
+}
+
+export const storeShelfMixin = {
+  computed: {
+    ...mapGetters([
+      'isEditMode',
+      'shelfList',
+      'shelfSelected',
+      'shelfTitleVisible',
+      'offsetY'
+    ])
+  },
+  methods: {
+    ...mapActions([
+      'setIsEditMode',
+      'setShelfList',
+      'setShelfSelected',
+      'setShelfTitleVisible',
+      'setOffsetY'
+    ]),
+    showBookDetail(book) {
+      gotoBookDetail(this, book)
+    },
+    getShelfList() {
+      let shelfList = getBookShelf()
+      if (!shelfList) {
+        shelf().then(response => {
+        if (response.status === 200 && response.data && response.data.bookList) {
+          shelfList = appendAddToShelf(response.data.bookList)
+          saveBookShelf(shelfList)
+          this.setShelfList(shelfList)
         }
       })
+      } else {
+        this.setShelfList(shelfList)
+      }        
     }
   }
 }

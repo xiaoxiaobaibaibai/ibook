@@ -117,6 +117,11 @@ export default {
             } else {
                 this.hideShadow()
             }
+            if (this.hotSearchVisible) {
+                this.hideHotSearch()
+            } else {
+                this.$router.push('/store/shelf')
+            }
             this.hideHotSearch()
         }
     }

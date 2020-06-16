@@ -1,4 +1,4 @@
-import { getReadTime } from './localStorage'
+import { getReadTime, getLocalStorage, setLocalStorage, removeLocalStorage } from './localStorage'
  import { realPx } from './utils'
 
 export const FONT_SIZE_LIST = [
@@ -108,4 +108,13 @@ export function getReadTimeByMinute(fileName) {
 
 export function flatten(array) {
   return [].concat(...array.map(item => [].concat(item, ...flatten(item.subitems))))
+}
+
+export function switchLocale(vue) {
+  if (vue.$i18n.locale === 'en') {
+    vue.$i18n.locale = 'cn'
+  } else {
+    vue.$i18n.locale = 'en'
+  }
+  setLocalStorage('locale', vue.$i18n.locale)
 }
