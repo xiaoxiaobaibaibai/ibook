@@ -14,8 +14,8 @@
 
 <script type="text/ecmascript-6">
   import Scroll from '../common/Scroll'
-  import { getBookmark } from '@/utils/localStorage'
-  import { ebookMixin } from '@/utils/mixin'
+  import { getBookmark } from '../../utils/localStorage'
+  import { ebookMixin } from '../../utils/mixin'
 
   export default {
     mixins: [ebookMixin],
@@ -30,8 +30,8 @@
     methods: {
       displayBookmark(target) {
         this.display(target, () => {
-         this.hideTitleAndMenu() 
-        })        
+          this.hideTitleAndMenu()
+        })
       }
     },
     mounted() {

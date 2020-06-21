@@ -30,6 +30,10 @@ export default new Router({
           component: () => import('../views/store/StoreShelf.vue')
         },
         {
+          path: 'category',
+          component: () => import('../views/store/StoreCategory.vue')
+        },
+        {
           path: 'home',
           component: () => import('@/views/store/StoreHome.vue')
         },
@@ -40,6 +44,10 @@ export default new Router({
     {
       path: 'detail',
       component: () => import('../views/store/StoreDetail.vue')
+    },
+    {
+      path: 'speaking',
+      component: () => import('../views/store/StoreSpeaking.vue')
     }
       ]
     }

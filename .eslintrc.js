@@ -20,7 +20,8 @@ module.exports = {
     'spaced-comment': 'off',
     'quote-props': 'off',
     'quotes': 'off',
-    'no-unused-vars': 'off'
+    'no-unused-vars': 'off',
+    "vue/no-use-v-if-with-v-for": "off"    
 
 
   }

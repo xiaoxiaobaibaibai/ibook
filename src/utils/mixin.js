@@ -1,8 +1,91 @@
 import { mapGetters, mapActions } from 'vuex'
 import { themeList, addCss, removeAllCss, getReadTimeByMinute } from './book'
-import { saveLocation, getBookmark, getBookShelf, saveBookShelf } from './localStorage'
-import { gotoBookDetail, appendAddToShelf } from './store'
+import { getBookmark, saveLocation, getBookShelf, saveBookShelf } from './localStorage'
+import { gotoBookDetail, appendAddToShelf, computeId, removeAddFromShelf } from './store'
 import { shelf } from '../api/store'
+
+export const storeShelfMixin = {
+  computed: {
+    ...mapGetters([
+      'isEditMode',
+      'shelfList',
+      'shelfSelected',
+      'shelfTitleVisible',
+      'offsetY',
+      'shelfCategory',
+      'currentType'
+    ])
+  },
+  methods: {
+    ...mapActions([
+      'setIsEditMode',
+      'setShelfList',
+      'setShelfSelected',
+      'setShelfTitleVisible',
+      'setOffsetY',
+      'setShelfCategory',
+      'setCurrentType'
+    ]),
+    showBookDetail(book) {
+      gotoBookDetail(this, book)
+    },
+    getCategoryList(title) {
+      this.getShelfList().then(() => {
+        const categoryList = this.shelfList.filter(book => book.type === 2 && book.title === title)[0]
+        this.setShelfCategory(categoryList)
+      })
+    },
+    getShelfList() {
+      let shelfList = getBookShelf()
+      if (!shelfList) {
+        shelf().then(response => {
+          if (response.status === 200 && response.data && response.data.bookList) {
+            shelfList = appendAddToShelf(response.data.bookList)
+            saveBookShelf(shelfList)
+            return this.setShelfList(shelfList)
+          }
+        })
+      } else {
+        return this.setShelfList(shelfList)
+      }
+    },
+    moveOutOfGroup(f) {
+      this.setShelfList(this.shelfList.map(book => {
+        if (book.type === 2 && book.itemList) {
+          book.itemList = book.itemList.filter(subBook => !subBook.selected)
+        }
+        return book
+      })).then(() => {
+        const list = computeId(appendAddToShelf([].concat(
+          removeAddFromShelf(this.shelfList), ...this.shelfSelected)))
+        this.setShelfList(list).then(() => {
+          this.simpleToast(this.$t('shelf.moveBookOutSuccess'))
+          if (f) f()
+        })
+      })
+    }
+  }
+}
+
+export const storeHomeMixin = {
+  computed: {
+    ...mapGetters([
+      'offsetY',
+      'hotSearchOffsetY',
+      'flapCardVisible'
+    ])
+  },
+  methods: {
+    ...mapActions([
+      'setOffsetY',
+      'setHotSearchOffsetY',
+      'setFlapCardVisible'
+    ]),
+    showBookDetail(book) {
+      gotoBookDetail(this, book)
+    }
+  }
+}
 
 export const ebookMixin = {
   computed: {
@@ -31,13 +114,6 @@ export const ebookMixin = {
       return themeList(this)
     },
     getSectionName() {
-      // if (this.section) {
-      //   const sectionInfo = this.currentBook.section(this.section)
-      //   if (sectionInfo && sectionInfo.href && this.currentBook && this.currentBook.navigation) {
-      //     return this.currentBook.navigation.get(sectionInfo.href).label
-      //   }
-      // }
-      // return ''
       return this.section ? this.navigation[this.section].label : ''
     }
   },
@@ -66,134 +142,74 @@ export const ebookMixin = {
     initGlobalStyle() {
       removeAllCss()
       switch (this.defaultTheme) {
-          case 'Default':
-              addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_default.css`)
-              break
-          case 'Eye':
-              addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_eye.css`)
-              break
-          case 'Gold':
-              addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_gold.css`)
-              break
-          case 'Night':
-              addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_night.css`)
-              break
-          default: 
-              addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_default.css`)
-              break
+        case 'Default':
+          addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_default.css`)
+          break
+        case 'Eye':
+          addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_eye.css`)
+          break
+        case 'Gold':
+          addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_gold.css`)
+          break
+        case 'Night':
+          addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_night.css`)
+          break
+        default:
+          addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_default.css`)
+          break
       }
-},
+    },
     refreshLocation() {
       const currentLocation = this.currentBook.rendition.currentLocation()
       if (currentLocation && currentLocation.start) {
         const startCfi = currentLocation.start.cfi
-      const progress = this.currentBook.locations.percentageFromCfi(startCfi)
-    //  console.log(progress)
-      this.setProgress(Math.floor(progress * 100))
-      this.setSection(currentLocation.start.index)
-      saveLocation(this.fileName, startCfi)
-      const bookmark = getBookmark(this.fileName)
-      if (bookmark) {
-        if (bookmark.some(item => item.cfi === startCfi)) {
-          this.setIsBookmark(true)
+        const progress = this.currentBook.locations.percentageFromCfi(startCfi)
+        this.setProgress(Math.floor(progress * 100))
+        this.setSection(currentLocation.start.index)
+        saveLocation(this.fileName, startCfi)
+        const bookmark = getBookmark(this.fileName)
+        if (bookmark) {
+          if (bookmark.some(item => item.cfi === startCfi)) {
+            this.setIsBookmark(true)
+          } else {
+            this.setIsBookmark(false)
+          }
         } else {
           this.setIsBookmark(false)
         }
-      } else {
-        this.setIsBookmark(false)
-      }
-      if (this.pagelist) {
-        const totalPage = this.pagelist.length
-        const currentPage = currentLocation.start.location
-        if (currentPage && currentPage > 0) {
-          this.setPaginate(currentPage + ' / ' + totalPage)
+        if (this.pagelist) {
+          const totalPage = this.pagelist.length
+          const currentPage = currentLocation.start.location
+          if (currentPage && currentPage > 0) {
+            this.setPaginate(currentPage + ' / ' + totalPage)
+          } else {
+            this.setPaginate('')
+          }
         } else {
           this.setPaginate('')
         }
-      } else {
-        this.setPaginate('')
-      }
       }
     },
     display(target, cb) {
       if (target) {
-          this.currentBook.rendition.display(target).then(() => {
-            this.refreshLocation()
-            if (cb) cb()
-          })
+        this.currentBook.rendition.display(target).then(() => {
+          this.refreshLocation()
+          if (cb) cb()
+        })
       } else {
-          this.currentBook.rendition.display().then(() => {
-            this.refreshLocation()
-            if (cb) cb()
-          })
-      }            
-  },
-    hideTitleAndMenu() {
-      // this.$store.dispatch('setMenuVisible', false)
-       this.setMenuVisible(false)
-       this.setSettingVisible(-1)
-       this.setFontFamilyVisible(false)
-   },
-   getReadTimeText() {
-    return this.$t('book.haveRead').replace('$1', getReadTimeByMinute(this.fileName))
-  }
-  }
-}
-
-export const storeHomeMixin = {
-  computed: {
-    ...mapGetters([
-      'offsetY',
-      'hotSearchOffsetY',
-      'flapCardVisible'
-    ])
-  },
-  methods: {
-    ...mapActions([
-      'setOffsetY',
-      'setHotSearchOffsetY',
-      'setFlapCardVisible'
-    ]),
-    showBookDetail(book) {
-      gotoBookDetail(this, book)
-    }
-  }
-}
-
-export const storeShelfMixin = {
-  computed: {
-    ...mapGetters([
-      'isEditMode',
-      'shelfList',
-      'shelfSelected',
-      'shelfTitleVisible',
-      'offsetY'
-    ])
-  },
-  methods: {
-    ...mapActions([
-      'setIsEditMode',
-      'setShelfList',
-      'setShelfSelected',
-      'setShelfTitleVisible',
-      'setOffsetY'
-    ]),
-    showBookDetail(book) {
-      gotoBookDetail(this, book)
+        this.currentBook.rendition.display().then(() => {
+          this.refreshLocation()
+          if (cb) cb()
+        })
+      }
     },
-    getShelfList() {
-      let shelfList = getBookShelf()
-      if (!shelfList) {
-        shelf().then(response => {
-        if (response.status === 200 && response.data && response.data.bookList) {
-          shelfList = appendAddToShelf(response.data.bookList)
-          saveBookShelf(shelfList)
-          this.setShelfList(shelfList)
-        }
-      })
-      } else {
-        this.setShelfList(shelfList)
-      }        
+    hideTitleAndMenu() {
+      this.setMenuVisible(false)
+      this.setSettingVisible(-1)
+      this.setFontFamilyVisible(false)
+    },
+    getReadTimeText() {
+      return this.$t('book.haveRead').replace('$1', getReadTimeByMinute(this.fileName))
     }
   }
 }

@@ -12,8 +12,8 @@
   </div>
 </template>
 
-<script type="text/ecmascript-6">
-  import { px2rem } from '@/utils/utils'
+<script>
+  import { px2rem } from '../../utils/utils'
 
   export default {
     data() {
@@ -42,7 +42,6 @@
         end: false
       }
     },
-    methods: {},
     mounted() {
       this.task = setInterval(() => {
         this.$refs.mask.forEach((item, index) => {
@@ -94,11 +93,6 @@
           }
         })
       }, 20)
-    },
-    beforeDestroy() {
-      if (this.task) {
-        clearInterval(this.task)
-      }
     }
   }
 </script>
@@ -108,7 +102,7 @@
 
   .ebook-loading {
     position: relative;
-    z-index: 500;
+    z-index: 400;
     width: px2rem(63);
     height: px2rem(40);
     background: transparent;
@@ -129,16 +123,16 @@
           padding: 0 px2rem(7);
           box-sizing: border-box;
           @include left;
-          .ebook-loading-mask {
-            flex: 0 0 0;
-            width: 0;
-            height: px2rem(1.5);
-          }
           .ebook-loading-line {
             flex: 0 0 px2rem(16);
             width: px2rem(16);
-            height: px2rem(1.5);
+            height: px2rem(2);
             background: #d7d7d7;
+          }
+          .ebook-loading-mask {
+            flex: 0 0 0;
+            width: 0;
+            height: px2rem(2);
           }
         }
       }

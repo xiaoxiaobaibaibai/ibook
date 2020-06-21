@@ -1,66 +1,72 @@
 <template>
-  <div class="shelf-item" 
-      :class="{'shelf-item-shadow': data.type === 1 || data.type ===2}"
-      @click="onItemClick">
-      <component class="shelf-item-comp"
-                 :class="{'is-edit': isEditMode && data.type === 2}"
-                 :is="item" 
-                 :data="data"></component>
-      <div class="shelf-item-select-icon icon-selected"
-           :class="{'is-selected': data.selected}"
-           v-show="isEditMode && data.type === 1"></div>
+  <div class="shelf-item"
+       :class="{'shelf-item-shadow': data.type === 1 || data.type === 2}"
+       @click="onItemClick">
+    <component class="shelf-item-comp"
+               :class="{'is-edit': isEditMode && data.type === 2}"
+               :is="item"
+               :data="data"></component>
+    <div class="icon-selected"
+         :class="{'is-selected': data.selected}"
+         v-show="isEditMode && data.type === 1"></div>
   </div>
 </template>
 
 <script>
-import { storeShelfMixin } from '../../utils/mixin'
-import ShelfCategroy from '@/components/shelf/ShelfItemCategroy'
-import ShelfAdd from '@/components/shelf/ShelfItemAdd'
-import ShelfBook from '@/components/shelf/ShelfItemBook'
-import { gotoStoreHome, gotoBookDetail } from '../../utils/store' 
+  import { storeShelfMixin } from '../../utils/mixin'
+  import ShelfBook from './ShelfItemBook'
+  import ShelfCategory from './ShelfItemCategory'
+  import ShelfAdd from './ShelfItemAdd'
+  import { gotoStoreHome } from '../../utils/store'
 
-export default {
-  mixins: [storeShelfMixin],
-  props: {
+  export default {
+    mixins: [storeShelfMixin],
+    props: {
       data: Object
-  },
-  computed: {
+    },
+    computed: {
       item() {
-          return this.data.type === 1 ? this.book : (this.data.type === 2 ? this.category : this.add)
+        return this.data.type === 1 ? this.book : (this.data.type === 2 ? this.category : this.add)
       }
-  },
-  data() {
+    },
+    data() {
       return {
-          book: ShelfBook,
-          category: ShelfCategroy,
-          add: ShelfAdd
+        book: ShelfBook,
+        category: ShelfCategory,
+        add: ShelfAdd
       }
-  },
-  methods: {
-    onItemClick() {
-      if (this.isEditMode) {
-        this.data.selected = !this.data.selected
-        if (this.data.selected) {
-          this.shelfSelected.pushWithoutDuplicate(this.data)
+    },
+    methods: {
+      onItemClick() {
+        if (this.isEditMode) {
+          this.data.selected = !this.data.selected
+          if (this.data.selected) {
+            this.shelfSelected.pushWithoutDuplicate(this.data)
+          } else {
+            this.setShelfSelected(this.shelfSelected.filter(item => item.id !== this.data.id))
+          }
         } else {
-          this.setShelfSelected(this.shelfSelected.filter(item => item.id !== this.data.id))
+          if (this.data.type === 1) {
+            this.showBookDetail(this.data)
+          } else if (this.data.type === 2) {
+            this.$router.push({
+              path: '/store/category',
+              query: {
+                title: this.data.title
+              }
+            })
+          } else {
+            gotoStoreHome(this)
+          }
         }
-      } else {
-        if (this.data.type === 1) {
-        this.showBookDetail(this.data)
-      } else if (this.data.type === 2) {
-
-      } else {
-        gotoStoreHome(this)
       }
-      }      
     }
   }
-}
 </script>
 
 <style lang="scss" rel="stylesheet/scss" scoped>
   @import "../../assets/styles/global";
+
   .shelf-item {
     position: relative;
     width: 100%;
